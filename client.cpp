@@ -17,14 +17,12 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
+#include <query.h>
+#include <err.h>
 
-static void die(const char *msg) {
-    int err = errno;
-    fprintf(stderr, "[%d] %s\n", err, msg);
-    abort();
-}
-
-int main(int argc, char *argv[]) {
+int main(
+    // int argc, char *argv[]
+) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         die("socket()");
@@ -39,14 +37,21 @@ int main(int argc, char *argv[]) {
         die("connect");
     }
 
-    char msg[] = "hello";
-    write(fd, msg, strlen(msg));
-
-    char rbuf[64] = {};
-    ssize_t n = read(fd, rbuf, sizeof(rbuf) - 1);
-    if (n < 0) {
-        die("read");
+    // multiple requests
+    int32_t err = query(fd, "hello1");
+    if (err) {
+        goto L_DONE;
     }
-    printf("server says: %s\n", rbuf);
+    err = query(fd, "hello2");
+    if (err) {
+        goto L_DONE;
+    }
+    err = query(fd, "hello3");
+    if (err) {
+        goto L_DONE;
+    }
+
+L_DONE:
     close(fd);
+    return 0;
 }

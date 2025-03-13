@@ -1,6 +1,6 @@
 /**
  * @file ./server.cpp
- * @brief 
+ * @brief
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0
  * @date 2025-03-13
@@ -16,36 +16,12 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
+#include <err.h>
+#include <query.h>
 
-static void msg(const char *msg) {
-    fprintf(stderr, "%s\n", msg);
-}
-
-static void die(const char *msg) {
-    int err = errno;
-    fprintf(stderr, "[%d] %s\n", err, msg);
-    abort();
-}
-
-static void do_something(int connfd) {
-    char rbuf[64] = {};
-    ssize_t n = read(connfd, rbuf, sizeof(rbuf) - 1);
-    if (n < 0) {
-        msg("read() error");
-        return;
-    }
-    if (n == 0) {
-        msg("client closed connection");
-        return;
-    }
-    rbuf[n] = '\0'; /* Ensure the string is null-terminated */
-    fprintf(stderr, "client says: %s\n", rbuf);
-
-    char wbuf[] = "world";
-    write(connfd, wbuf, strlen(wbuf));
-}
-
-int main() {
+int main(
+    // int argc, char *argv[]
+) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         die("socket()");
@@ -78,10 +54,16 @@ int main() {
         int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
         if (connfd < 0) {
             msg("accept() error");
-            continue;   /* error */
+            continue; /* error */
         }
 
-        do_something(connfd);
+        while (true) {
+            /* here the server only serves one client connection at once */
+            int32_t err = handle_query(connfd);
+            if (err) {
+                break;
+            }
+        }
         close(connfd);
     }
 
