@@ -17,7 +17,6 @@
 #include <sys/socket.h>
 #include <netinet/ip.h>
 
-
 static void msg(const char *msg) {
     fprintf(stderr, "%s\n", msg);
 }
@@ -35,6 +34,11 @@ static void do_something(int connfd) {
         msg("read() error");
         return;
     }
+    if (n == 0) {
+        msg("client closed connection");
+        return;
+    }
+    rbuf[n] = '\0'; /* Ensure the string is null-terminated */
     fprintf(stderr, "client says: %s\n", rbuf);
 
     char wbuf[] = "world";
@@ -47,38 +51,40 @@ int main() {
         die("socket()");
     }
 
-    // this is needed for most server applications
+    /* this is needed for most server applications */
     int val = 1;
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
 
-    // bind
+    /* bind */
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
-    addr.sin_port = ntohs(1234);
-    addr.sin_addr.s_addr = ntohl(0);    // wildcard address 0.0.0.0
+    addr.sin_port = htons(1234); /* Correct network byte order */
+    addr.sin_addr.s_addr = INADDR_ANY; /* Correct address */
     int rv = bind(fd, (const struct sockaddr *)&addr, sizeof(addr));
     if (rv) {
         die("bind()");
     }
 
-    // listen
+    /* listen */
     rv = listen(fd, SOMAXCONN);
     if (rv) {
         die("listen()");
     }
 
     while (true) {
-        // accept
+        /* accept */
         struct sockaddr_in client_addr = {};
         socklen_t socklen = sizeof(client_addr);
         int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
         if (connfd < 0) {
-            continue;   // error
+            msg("accept() error");
+            continue;   /* error */
         }
 
         do_something(connfd);
         close(connfd);
     }
 
+    close(fd); /* Close the listening socket before exiting */
     return 0;
 }

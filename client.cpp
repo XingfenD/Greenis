@@ -7,6 +7,7 @@
  * @copyright Copyright (c) 2025
  */
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +33,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
     addr.sin_port = ntohs(1234);
-    addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);  // 127.0.0.1
+    addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);  /* 127.0.0.1 */
     int rv = connect(fd, (const struct sockaddr *)&addr, sizeof(addr));
     if (rv) {
         die("connect");
