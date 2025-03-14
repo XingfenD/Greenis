@@ -11,6 +11,7 @@
 #define ERR_H
 
     void msg(const char *msg);
+    void msg_errno(const char *msg);
     void die(const char *msg);
 
 #endif /* ERR_H */

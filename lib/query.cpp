@@ -18,9 +18,11 @@
 #include <netinet/ip.h>
 #include <query.h>
 #include <err.h>
+#include <vector>
+#include <utils.h>
 // #include <stdlib.h>
 
-int32_t read_full(int fd, char *buf, size_t n) {
+int32_t read_full(int fd, uint8_t *buf, size_t n) {
     while (n > 0) {
         ssize_t rv = read(fd, buf, n);
         if (rv <= 0) {
@@ -33,7 +35,7 @@ int32_t read_full(int fd, char *buf, size_t n) {
     return 0;
 }
 
-int32_t write_all(int fd, const char *buf, size_t n) {
+int32_t write_all(int fd, const uint8_t *buf, size_t n) {
     while (n > 0) {
         ssize_t rv = write(fd, buf, n);
         if (rv <= 0) {
@@ -46,18 +48,9 @@ int32_t write_all(int fd, const char *buf, size_t n) {
     return 0;
 }
 
-/**
- * @brief Handle a query from a client.
- *
- * This function reads a query from the client, processes it, and sends a response back.
- * The communication protocol includes a 4-byte header indicating the length of the message body.
- *
- * @param connfd The file descriptor of the client connection.
- * @return int32_t 0 on success, -1 on error.
- */
 int32_t handle_query(int connfd) {
     /* 4 bytes header */
-    char rbuf[4 + K_MAX_MSG];
+    uint8_t rbuf[4 + K_MAX_MSG];
     errno = 0;
     int32_t err = read_full(connfd, rbuf, 4);
     if (err) {
@@ -84,7 +77,7 @@ int32_t handle_query(int connfd) {
 
     /* reply using the same protocol */
     const char reply[] = "world";
-    char wbuf[4 + sizeof(reply)];
+    uint8_t wbuf[4 + sizeof(reply)];
     len = (uint32_t)strlen(reply);
     memcpy(wbuf, &len, 4);
     memcpy(&wbuf[4], reply, len);
@@ -97,7 +90,7 @@ int32_t query(int fd, const char *text) {
         return -1;
     }
 
-    char wbuf[4 + K_MAX_MSG];
+    uint8_t wbuf[4 + K_MAX_MSG];
     memcpy(wbuf, &len, 4);  /* assume little endian */
     memcpy(&wbuf[4], text, len);
     if (int32_t err = write_all(fd, wbuf, 4 + len)) {
@@ -105,7 +98,7 @@ int32_t query(int fd, const char *text) {
     }
 
     /* 4 bytes header */
-    char rbuf[4 + K_MAX_MSG + 1];
+    uint8_t rbuf[4 + K_MAX_MSG + 1];
     errno = 0;
     int32_t err = read_full(fd, rbuf, 4);
     if (err) {
@@ -128,5 +121,51 @@ int32_t query(int fd, const char *text) {
 
     /* do something */
     printf("server says: %.*s\n", len, &rbuf[4]);
+    return 0;
+}
+
+int32_t send_req(int fd, const uint8_t *text, size_t len) {
+    if (len > K_MAX_MSG) {
+        return -1;
+    }
+
+    std::vector<uint8_t> wbuf;
+    buf_append(wbuf, (const uint8_t *)&len, 4);
+    buf_append(wbuf, text, len);
+    return write_all(fd, wbuf.data(), wbuf.size());
+}
+
+int32_t read_res(int fd) {
+    // 4 bytes header
+    std::vector<uint8_t> rbuf;
+    rbuf.resize(4);
+    errno = 0;
+    int32_t err = read_full(fd, &rbuf[0], 4);
+    if (err) {
+        if (errno == 0) {
+            msg("EOF");
+        } else {
+            msg("read() error");
+        }
+        return err;
+    }
+
+    uint32_t len = 0;
+    memcpy(&len, rbuf.data(), 4);  // assume little endian
+    if (len > K_MAX_MSG) {
+        msg("too long");
+        return -1;
+    }
+
+    // reply body
+    rbuf.resize(4 + len);
+    err = read_full(fd, &rbuf[4], len);
+    if (err) {
+        msg("read() error");
+        return err;
+    }
+
+    // do something
+    printf("len:%u data:%.*s\n", len, len < 100 ? len : 100, &rbuf[4]);
     return 0;
 }

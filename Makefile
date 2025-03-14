@@ -1,7 +1,7 @@
 # ./Makefile
 
 CC = g++
-CFLAGS = -Wall -Og $(INCLUDES) -Wextra -funroll-loops -march=native
+CFLAGS = -Wall -Og $(INCLUDES) -Wextra -funroll-loops -march=native -std=c++11
 LDFLAGS =
 INCLUDES = -I./inc
 

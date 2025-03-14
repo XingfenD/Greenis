@@ -12,7 +12,7 @@
 
     #include <stdlib.h>
 
-    #define K_MAX_MSG 4096
+    #define K_MAX_MSG (32 << 20) /* likely larger than the kernel buffer */
 
     /**
      * @brief Reads exactly n bytes from the file descriptor fd into the buffer buf.
@@ -26,7 +26,7 @@
      * @param n The number of bytes to read.
      * @return int32_t Returns 0 on success, or -1 on error or unexpected EOF.
      */
-    int32_t read_full(int fd, char *buf, size_t n);
+    int32_t read_full(int fd, uint8_t *buf, size_t n);
 
     /**
      * @brief Writes exactly n bytes from the buffer buf to the file descriptor fd.
@@ -40,7 +40,7 @@
      * @param n The number of bytes to write.
      * @return int32_t Returns 0 on success, or -1 on error.
      */
-    int32_t write_all(int fd, const char *buf, size_t n);
+    int32_t write_all(int fd, const uint8_t *buf, size_t n);
 
     /**
      * @brief Handle a query from a client.
@@ -64,5 +64,10 @@
      * @return int32_t 0 on success, -1 on error.
      */
     int32_t query(int fd, const char *text);
+
+    /* the `query` function was simply splited into `send_req` and `read_res` */
+    int32_t send_req(int fd, const uint8_t *text, size_t len);
+
+    int32_t read_res(int fd);
 
 #endif /* QUERY_H */

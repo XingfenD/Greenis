@@ -1,6 +1,6 @@
 /**
  * @file ./client.cpp
- * @brief 
+ * @brief
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0
  * @date 2025-03-13
