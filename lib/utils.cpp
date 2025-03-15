@@ -9,7 +9,7 @@
 
 #include <utils.h>
 #include <fcntl.h>
-#include <err.h>
+#include <err_pack.h>
 
 /* Append data to the outgoing buffer */
 void

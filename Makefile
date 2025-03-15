@@ -1,7 +1,7 @@
 # ./Makefile
 
-CC = g++
-CFLAGS = -Wall -Og $(INCLUDES) -Wextra -funroll-loops -march=native -std=c++11
+CC = clang++
+CFLAGS = -Wall -g $(INCLUDES) -Wextra -funroll-loops -march=native -std=c++11
 LDFLAGS =
 INCLUDES = -I./inc
 
@@ -22,8 +22,10 @@ server: $(SERVER_EXEC)
 client: $(CLIENT_EXEC)
 	$(CLIENT_EXEC)
 
+remake: clean | all
+
 clean:
-	rm -rf build
+	rm -rf build/*
 
 .PHONY: clean
 

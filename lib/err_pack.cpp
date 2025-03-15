@@ -7,9 +7,9 @@
  * @copyright Copyright (c) 2025
  */
 
+#include <err_pack.h>
 #include <cstdio>
-#include <errno.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 void msg(const char *msg) {
     fprintf(stderr, "%s\n", msg);
