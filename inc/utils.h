@@ -12,8 +12,6 @@
 
     #include <vector>
 
-    void buf_append(std::vector<uint8_t> &buf, const uint8_t *data, size_t len);
-    void buf_consume(std::vector<uint8_t> &buf, size_t n);
     void fd_set_nb(int fd);
     bool read_u32(const uint8_t *&cur, const uint8_t *end, uint32_t &out);
     bool read_str(const uint8_t *&cur, const uint8_t *end, size_t n, std::string &out);

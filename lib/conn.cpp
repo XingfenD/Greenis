@@ -7,18 +7,22 @@
  * @copyright Copyright (c) 2025
  */
 
-#include <conn.h>
-#include <fcntl.h>
-#include <cassert>
+/* stdlib */
 #include <unistd.h>
 
+/* system */
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
+/* proj */
+#include <conn.h>
 #include <err_pack.h>
 #include <utils.h>
 #include <query.h>
+#include <defs.h>
+#include <response.h>
 
 /* application callback when the listening socket is ready */
 Conn *handle_accept(int fd) {
@@ -67,12 +71,16 @@ bool try_one_request(Conn *conn) {
     const uint8_t *request = &conn->incoming[4];
 
     /* got one request, do some application logic */
-    printf("client says: fd:%d len:%d data:%.*s\n",
-        conn->fd, len, len < 100 ? len : 100, request);
-
-    /* generate the response (echo) */
-    buf_append(conn->outgoing, (const uint8_t *)&len, 4);
-    buf_append(conn->outgoing, request, len);
+    std::vector<std::string> cmd;
+    if (parse_req(request, len, cmd) < 0) {
+        msg("bad request");
+        conn->want_close = true;
+        return false;   /* want close */
+    }
+    size_t header_pos = 0;
+    response_begin(conn->outgoing, &header_pos);
+    do_request(cmd, conn->outgoing);
+    response_end(conn->outgoing, header_pos);
 
     /* application logic done! remove the request message. */
     buf_consume(conn->incoming, 4 + len);

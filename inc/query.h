@@ -12,7 +12,14 @@
 
     #include <stdlib.h>
 
-    #define K_MAX_MSG ((size_t) 4096)
+    typedef enum {
+        TAG_NIL = 0,    /* nil */
+        TAG_ERR = 1,    /* error code + msg */
+        TAG_STR = 2,    /* string */
+        TAG_INT = 3,    /* int64 */
+        TAG_DBL = 4,    /* double */
+        TAG_ARR = 5,    /* array */
+    } QueryTag;
 
     /**
      * @brief Reads exactly n bytes from the file descriptor fd into the buffer buf.
@@ -45,5 +52,7 @@
     int32_t send_req(int fd, const std::vector<std::string> &cmd);
 
     int32_t read_res(int fd);
+
+    int32_t print_response(const uint8_t *data, size_t size);
 
 #endif /* !QUERY_H */

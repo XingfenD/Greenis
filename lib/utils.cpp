@@ -11,17 +11,6 @@
 #include <fcntl.h>
 #include <err_pack.h>
 
-/* Append data to the outgoing buffer */
-void
-buf_append(std::vector<uint8_t> &buf, const uint8_t *data, size_t len) {
-    buf.insert(buf.end(), data, data + len);
-}
-
-/* Consume data from the incoming buffer */
-void buf_consume(std::vector<uint8_t> &buf, size_t n) {
-    buf.erase(buf.begin(), buf.begin() + n);
-}
-
 void fd_set_nb(int fd) {
     errno = 0;
     int flags = fcntl(fd, F_GETFL, 0);

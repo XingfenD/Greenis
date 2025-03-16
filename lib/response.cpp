@@ -7,17 +7,20 @@
  * @copyright Copyright (c) 2025
  */
 
+/* stdlib */
 #include <stdint.h>
 
+/* proj */
 #include <map>
 #include <string>
 #include <vector>
 
+/* proj */
 #include <utils.h>
 #include <response.h>
-
-/* placeholder; implemented later */
-std::map<std::string, std::string> g_data;
+#include <buffer.h>
+#include <defs.h>
+#include <key_value.h>
 
 /*
  * +------+-----+------+-----+------+-----+-----+------+
@@ -53,27 +56,37 @@ parse_req(const uint8_t *data, size_t size, std::vector<std::string> &out) {
     return 0;
 }
 
-void do_request(std::vector<std::string> &cmd, Response &out) {
+void do_request(std::vector<std::string> &cmd, Buffer &out) {
     if (cmd.size() == 2 && cmd[0] == "get") {
-        auto it = g_data.find(cmd[1]);
-        if (it == g_data.end()) {
-            out.status = RES_NX;    /* not found */
-            return;
-        }
-        const std::string &val = it->second;
-        out.data.assign(val.begin(), val.end());
+        return do_get(cmd, out);
     } else if (cmd.size() == 3 && cmd[0] == "set") {
-        g_data[cmd[1]].swap(cmd[2]);
+        return do_set(cmd, out);
     } else if (cmd.size() == 2 && cmd[0] == "del") {
-        g_data.erase(cmd[1]);
+        return do_del(cmd, out);
+    } else if (cmd.size() == 1 && cmd[0] == "keys") {
+        return do_keys(cmd, out);
     } else {
-        out.status = RES_ERR;       /* unrecognized command */
+        return out_err(out, ERR_UNKNOWN, "unknown command.");
     }
 }
 
-void make_response(const Response &resp, std::vector<uint8_t> &out) {
-    uint32_t resp_len = 4 + (uint32_t) resp.data.size();
-    buf_append(out, (const uint8_t *) &resp_len, 4);
-    buf_append(out, (const uint8_t *) &resp.status, 4);
-    buf_append(out, resp.data.data(), resp.data.size());
+void response_begin(Buffer &out, size_t *header) {
+    *header = out.size();       /* messege header position */
+    buf_append_u32(out, 0);     /* reserve space */
+}
+
+size_t response_size(Buffer &out, size_t header) {
+    return out.size() - header - 4;
+}
+
+void response_end(Buffer &out, size_t header) {
+    size_t msg_size = response_size(out, header);
+    if (msg_size > K_MAX_MSG) {
+        out.resize(header + 4);
+        out_err(out, ERR_TOO_BIG, "response is too big.");
+        msg_size = response_size(out, header);
+    }
+    /* message header */
+    uint32_t len = (uint32_t) msg_size;
+    memcpy(&out[header], &len, 4);
 }

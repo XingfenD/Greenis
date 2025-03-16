@@ -42,6 +42,9 @@ int main(int argc, char *argv[]) {
         die("bind()");
     }
 
+    /* set the listen fd to nonblocking mode */
+    fd_set_nb(fd);
+
     /* listen */
     rv = listen(fd, SOMAXCONN);
     if (rv) {
@@ -102,7 +105,7 @@ int main(int argc, char *argv[]) {
         }
 
         /* handle connected sockets */
-        /* note: skip the first (listening socket) */
+        /* NOTE: skip the first (listening socket) */
         for (size_t i = 1; i < poll_args.size(); ++i) {
             uint32_t ready = poll_args[i].revents;
             if (ready == 0) {
