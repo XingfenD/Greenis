@@ -40,4 +40,4 @@
     void handle_write(Conn *conn);
     void handle_read(Conn *conn);
 
-#endif /* CONN_H */
+#endif /* !CONN_H */

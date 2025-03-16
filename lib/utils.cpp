@@ -38,3 +38,23 @@ void fd_set_nb(int fd) {
         die("fcntl error");
     }
 }
+
+bool
+read_u32(const uint8_t *&cur, const uint8_t *end, uint32_t &out) {
+    if (cur + 4 > end) {
+        return false;
+    }
+    memcpy(&out, cur, 4);
+    cur += 4;
+    return true;
+}
+
+bool
+read_str(const uint8_t *&cur, const uint8_t *end, size_t n, std::string &out) {
+    if (cur + n > end) {
+        return false;
+    }
+    out.assign(cur, cur + n);
+    cur += n;
+    return true;
+}

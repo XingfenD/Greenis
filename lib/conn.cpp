@@ -76,7 +76,7 @@ bool try_one_request(Conn *conn) {
 
     /* application logic done! remove the request message. */
     buf_consume(conn->incoming, 4 + len);
-    /* Q: Why not just empty the buffer? See the explanation of "pipelining". */
+    /* NOTE: Q Why not just empty the buffer? See the explanation of "pipelining". */
     return true; /* success */
 }
 
@@ -132,7 +132,7 @@ void handle_read(Conn *conn) {
 
     /* parse requests and generate responses */
     while (try_one_request(conn)) {}
-    /* Q: Why calling this in a loop? See the explanation of "pipelining". */
+    /* NOTE: Q Why calling this in a loop? See the explanation of "pipelining". */
 
     /* update the readiness intention */
     if (conn->outgoing.size() > 0) {    /* has a response */

@@ -12,17 +12,20 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
+
+#include <vector>
+
 #include <query.h>
 #include <err_pack.h>
-#include <vector>
 #include <utils.h>
 // #include <stdlib.h>
 #include <debug.h>
 
-int32_t read_full(int fd, uint8_t *buf, size_t n) {
+int32_t read_full(int fd, char *buf, size_t n) {
     while (n > 0) {
         ssize_t rv = read(fd, buf, n);
         if (rv <= 0) {
@@ -35,7 +38,7 @@ int32_t read_full(int fd, uint8_t *buf, size_t n) {
     return 0;
 }
 
-int32_t write_all(int fd, const uint8_t *buf, size_t n) {
+int32_t write_all(int fd, const char *buf, size_t n) {
     while (n > 0) {
         ssize_t rv = write(fd, buf, n);
         if (rv <= 0) {
@@ -48,23 +51,34 @@ int32_t write_all(int fd, const uint8_t *buf, size_t n) {
     return 0;
 }
 
-int32_t send_req(int fd, const uint8_t *text, size_t len) {
+int32_t send_req(int fd, const std::vector<std::string> &cmd) {
+    uint32_t len = 4;
+    for (const std::string &s : cmd) {
+        len += 4 + s.size();
+    }
     if (len > K_MAX_MSG) {
         return -1;
     }
 
-    std::vector<uint8_t> wbuf;
-    buf_append(wbuf, (const uint8_t *) &len, 4);
-    buf_append(wbuf, text, len);
-    return write_all(fd, wbuf.data(), wbuf.size());
+    char wbuf[4 + K_MAX_MSG];
+    memcpy(&wbuf[0], &len, 4); /* assume little endian */
+    uint32_t n = cmd.size();
+    memcpy(&wbuf[4], &n, 4);
+    size_t cur = 8;
+    for (const std::string &s : cmd) {
+        uint32_t p = (uint32_t)s.size();
+        memcpy(&wbuf[cur], &p, 4);
+        memcpy(&wbuf[cur + 4], s.data(), s.size());
+        cur += 4 + s.size();
+    }
+    return write_all(fd, wbuf, 4 + len);
 }
 
 int32_t read_res(int fd) {
     /* 4 bytes header */
-    std::vector<uint8_t> rbuf;
-    rbuf.resize(4);
+    char rbuf[4 + K_MAX_MSG + 1];
     errno = 0;
-    int32_t err = read_full(fd, rbuf.data(), 4);
+    int32_t err = read_full(fd, rbuf, 4);
     if (err) {
         if (errno == 0) {
             msgf("EOF, fd=%d\n", fd);
@@ -74,23 +88,27 @@ int32_t read_res(int fd) {
         return err;
     }
 
-    /* Parse length from header, assuming little endian */
     uint32_t len = 0;
-    memcpy(&len, rbuf.data(), 4);
+    memcpy(&len, rbuf, 4); /* assume little endian */
     if (len > K_MAX_MSG) {
-        msgf("too long, len=%u\n", len);
+        msgf("too long, fd=%d\n", fd);
         return -1;
     }
 
-    /* Read message body */
-    rbuf.resize(4 + len);
-    err = read_full(fd, rbuf.data() + 4, len);
+    /* reply body */
+    err = read_full(fd, &rbuf[4], len);
     if (err) {
-        msg("read() error");
+        msgf("read() error, fd=%d\n", fd);
         return err;
     }
 
-    /* Process the message */
-    printf("len:%u data:%.*s\n", len, len < 100 ? len : 100, rbuf.data() + 4);
+    /* print the result */
+    uint32_t rescode = 0;
+    if (len < 4) {
+        msgf("bad response, fd=%d\n", fd);
+        return -1;
+    }
+    memcpy(&rescode, &rbuf[4], 4);
+    printf("server says: [%u] %.*s\n", rescode, len - 4, &rbuf[8]);
     return 0;
 }

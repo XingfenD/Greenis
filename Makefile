@@ -11,8 +11,8 @@ BIN_DIR = $(BUILD_DIR)
 
 SOURCES := $(wildcard $(LIB_DIR)/*.cpp)
 OBJECTS := $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
-SERVER_EXEC = $(BIN_DIR)/greenis_server.out
-CLIENT_EXEC = $(BIN_DIR)/greenis_client.out
+SERVER_EXEC = $(BIN_DIR)/server_greenis
+CLIENT_EXEC = $(BIN_DIR)/client_greenis
 
 all: $(SERVER_EXEC) $(CLIENT_EXEC)
 
