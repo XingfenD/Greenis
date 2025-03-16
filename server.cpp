@@ -7,17 +7,21 @@
  * @copyright Copyright (c) 2025
  */
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <errno.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
-#include <err.h>
+#include <err_pack.h>
+
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+#include <conn.h>
 #include <query.h>
+#include <debug.h>
+#include <poll.h>
 
 int main(
     // int argc, char *argv[]
@@ -47,25 +51,91 @@ int main(
         die("listen()");
     }
 
+    /* a map of all client connections, keyed by fd */
+    std::vector<Conn *> fd2conn;
+    /* the event loop */
+    std::vector<struct pollfd> poll_args;
+
     while (true) {
-        /* accept */
-        struct sockaddr_in client_addr = {};
-        socklen_t socklen = sizeof(client_addr);
-        int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
-        if (connfd < 0) {
-            msg("accept() error");
-            continue; /* error */
+        /* prepare the arguments of the poll() */
+        poll_args.clear();
+
+        /* put the listening sockets in the first position */
+        struct pollfd pfd = {fd, POLLIN, 0};
+        poll_args.push_back(pfd);
+
+        /* the rest are the sockets that have already been connected */
+        for (Conn *conn : fd2conn) {
+            if (!conn) {
+                continue;
+            }
+
+            /* always poll() for error */
+            struct pollfd pfd = {conn->fd, POLLERR, 0};
+
+            /* set poll() flags from the application's intent */
+            if (conn->want_read) {
+                pfd.events |= POLLIN;
+            }
+            if (conn->want_write) {
+                pfd.events |= POLLOUT;
+            }
+            poll_args.push_back(pfd);
         }
 
-        while (true) {
-            /* here the server only serves one client connection at once */
-            int32_t err = handle_query(connfd);
-            if (err) {
-                break;
+        /* wait for readiness */
+        int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), -1);
+        if (rv < 0 && errno == EINTR) {
+            continue;   /* not an error */
+        }
+        if (rv < 0) {
+            die("poll()");
+        }
+
+        /* handle the listening socket */
+        if (poll_args[0].revents) {
+            if (Conn *conn = handle_accept(fd)) {
+                /* put it into the map */
+                if (fd2conn.size() <= (size_t)conn->fd) {
+                    fd2conn.resize(conn->fd + 1);
+                }
+                assert(!fd2conn[conn->fd]);
+                fd2conn[conn->fd] = conn;
             }
         }
-        close(connfd);
-    }
+
+        /* handle connected sockets */
+        /* note: skip the first (listening socket) */
+        for (size_t i = 1; i < poll_args.size(); ++i) {
+            uint32_t ready = poll_args[i].revents;
+            if (ready == 0) {
+                continue;
+            }
+
+            Conn *conn = fd2conn[poll_args[i].fd];
+            if (ready & POLLIN) {
+                assert(conn->want_read);
+                handle_read(conn);
+
+                /* application logic */
+
+            }
+            if (ready & POLLOUT) {
+                assert(conn->want_write);
+                handle_write(conn);
+
+                /* application logic */
+
+            }
+
+            /* close the socket from socket error or application logic */
+            if ((ready & POLLERR) || conn->want_close) {
+                (void)close(conn->fd);
+                fd2conn[conn->fd] = NULL;
+                delete conn;
+            }
+        } /* for each connected sockets */
+    } /* the event loop */
 
     close(fd); /* Close the listening socket before exiting */
     return 0;

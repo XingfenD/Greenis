@@ -42,30 +42,6 @@
      */
     int32_t write_all(int fd, const uint8_t *buf, size_t n);
 
-    /**
-     * @brief Handle a query from a client.
-     *
-     * This function reads a query from the client, processes it, and sends a response back.
-     * The communication protocol includes a 4-byte header indicating the length of the message body.
-     *
-     * @param connfd The file descriptor of the client connection.
-     * @return int32_t 0 on success, -1 on error.
-     */
-    int32_t handle_query(int connfd);
-
-    /**
-     * @brief Send a query to the server and receive the response.
-     *
-     * This function sends a query to the server and waits for the response.
-     * The communication protocol includes a 4-byte header indicating the length of the message body.
-     *
-     * @param fd The file descriptor of the server connection.
-     * @param text The query text to send.
-     * @return int32_t 0 on success, -1 on error.
-     */
-    int32_t query(int fd, const char *text);
-
-    /* the `query` function was simply splited into `send_req` and `read_res` */
     int32_t send_req(int fd, const uint8_t *text, size_t len);
 
     int32_t read_res(int fd);

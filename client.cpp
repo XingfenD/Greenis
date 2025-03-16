@@ -12,13 +12,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <errno.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <query.h>
-#include <err.h>
+#include <err_pack.h>
+#include <debug.h>
 
 int main(
     // int argc, char *argv[]
@@ -37,18 +37,24 @@ int main(
         die("connect");
     }
 
-    // multiple requests
-    int32_t err = query(fd, "hello1");
-    if (err) {
-        goto L_DONE;
+    /* multiple pipelined requests */
+    std::vector<std::string> query_list = {
+        "hello1", "hello2", "hello3",
+        /* a large message requires multiple event loop iterations */
+        std::string(K_MAX_MSG, 'z'),
+        "hello5",
+    };
+    for (const std::string &s : query_list) {
+        int32_t err = send_req(fd, (uint8_t *)s.data(), s.size());
+        if (err) {
+            goto L_DONE;
+        }
     }
-    err = query(fd, "hello2");
-    if (err) {
-        goto L_DONE;
-    }
-    err = query(fd, "hello3");
-    if (err) {
-        goto L_DONE;
+    for (size_t i = 0; i < query_list.size(); ++i) {
+        int32_t err = read_res(fd);
+        if (err) {
+            goto L_DONE;
+        }
     }
 
 L_DONE:
