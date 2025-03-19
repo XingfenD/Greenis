@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>     /* calloc(), free() */
-#include <hashtable.h>
+#include <HashTable.h>
 
 /* n must be a power of 2 */
 void h_init(HTab *htab, size_t n) {

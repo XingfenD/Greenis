@@ -164,7 +164,7 @@ int32_t print_response(const uint8_t *data, size_t size) {
         {
             int64_t val = 0;
             memcpy(&val, &data[1], 8);
-            printf("(int) %ld\n", val);
+            printf("(int) %lld\n", val);
             return 1 + 8;
         }
     case TAG_DBL:

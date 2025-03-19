@@ -1,6 +1,12 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+    #ifdef __linux__
+
+    #include <string>
+
+    #endif /* __linux */
+
     #include <vector>
 
     typedef std::vector<uint8_t> Buffer;

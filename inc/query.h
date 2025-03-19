@@ -10,6 +10,13 @@
 #ifndef QUERY_H
 #define QUERY_H
 
+    #ifdef __linux__
+
+    #include <string>
+    #include <vector>
+
+    #endif /* __linux */
+
     #include <stdlib.h>
 
     typedef enum {

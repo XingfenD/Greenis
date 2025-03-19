@@ -10,6 +10,16 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+    #ifdef __linux__
+
+    /* stdlib */
+    #include <stdint.h>
+
+    /* C++ */
+    #include <string>
+
+    #endif /* __linux__ */
+
     #include <vector>
 
     void fd_set_nb(int fd);

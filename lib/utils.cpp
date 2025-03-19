@@ -7,6 +7,12 @@
  * @copyright Copyright (c) 2025
  */
 
+#ifdef __linux__
+
+#include <string.h>
+
+#endif /* __linux  */
+
 #include <utils.h>
 #include <fcntl.h>
 #include <err_pack.h>

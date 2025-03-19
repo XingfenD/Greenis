@@ -3,7 +3,7 @@
 
     #include <string>
 
-    #include <hashtable.h>
+    #include <HashTable.h>
     #include <buffer.h>
 
     /* KV pair for the top-level hashtable */

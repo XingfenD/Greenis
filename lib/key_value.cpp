@@ -5,7 +5,7 @@
 /* proj */
 #include <key_value.h>
 #include <buffer.h>
-#include <hashtable.h>
+#include <HashTable.h>
 #include <defs.h>
 
 struct {
@@ -33,11 +33,13 @@ void do_get(std::vector<std::string> &cmd, Buffer &out) {
     Entry key;
     key.key.swap(cmd[1]);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
+
     /* hashtable lookup */
     HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
     if (!node) {
         return out_nil(out);
     }
+
     /* copy the value */
     const std::string &val = container_of(node, Entry, node)->val;
     return out_str(out, val.data(), val.size());
@@ -48,8 +50,10 @@ void do_set(std::vector<std::string> &cmd, Buffer &out) {
     Entry key;
     key.key.swap(cmd[1]);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
+
     /* hashtable lookup */
     HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
+
     if (node) {
         /* found, update the value */
         container_of(node, Entry, node)->val.swap(cmd[2]);
@@ -69,8 +73,10 @@ void do_del(std::vector<std::string> &cmd, Buffer &out) {
     Entry key;
     key.key.swap(cmd[1]);
     key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
+
     /* hashtable delete */
     HNode *node = hm_delete(&g_data.db, &key.node, &entry_eq);
+
     if (node) { /* deallocate the pair */
         delete container_of(node, Entry, node);
     }

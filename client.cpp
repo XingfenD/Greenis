@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     std::vector<std::string> cmd;
 
     /* some basic test cmds without input cmd args */
-    cmd.push_back("test");
+    // cmd.push_back("test");
 
     for (int i = 1; i < argc; i++) {
         cmd.push_back(argv[i]);

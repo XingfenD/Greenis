@@ -7,6 +7,12 @@
  * @copyright Copyright (c) 2025
  */
 
+ #ifdef __linux__
+
+ #include <string.h>
+ 
+ #endif /* __linux */
+
 /* stdlib */
 #include <unistd.h>
 
@@ -57,6 +63,7 @@ bool try_one_request(Conn *conn) {
     if (conn->incoming.size() < 4) {
         return false;   /* want read */
     }
+
     uint32_t len = 0;
     memcpy(&len, conn->incoming.data(), 4);
     if (len > K_MAX_MSG) {
@@ -64,10 +71,12 @@ bool try_one_request(Conn *conn) {
         conn->want_close = true;
         return false;   /* want close */
     }
+
     /* message body */
     if (4 + len > conn->incoming.size()) {
         return false;   /* want read */
     }
+
     const uint8_t *request = &conn->incoming[4];
 
     /* got one request, do some application logic */
@@ -119,12 +128,14 @@ void handle_read(Conn *conn) {
     if (rv < 0 && errno == EAGAIN) {
         return; /* actually not ready */
     }
+
     /* handle IO error */
     if (rv < 0) {
         msg_errno("read() error");
         conn->want_close = true;
         return; /* want close */
     }
+
     /* handle EOF */
     if (rv == 0) {
         if (conn->incoming.size() == 0) {
@@ -135,6 +146,7 @@ void handle_read(Conn *conn) {
         conn->want_close = true;
         return; /* want close */
     }
+
     /* got some new data */
     buf_append(conn->incoming, buf, (size_t)rv);
 
