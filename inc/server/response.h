@@ -16,12 +16,6 @@
 
     #include <buffer.h>
 
-    /* error code for TAG_ERR */
-    typedef enum {
-        ERR_UNKNOWN = 1,    /* unknown command */
-        ERR_TOO_BIG = 2,    /* response too big */
-    } ErrorCode;
-
     /**
      * @brief Parse the request data into a list of strings.
      *

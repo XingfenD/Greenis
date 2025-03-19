@@ -1,3 +1,12 @@
+/**
+ * @file ./inc/HashTable.h
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-17
+ * @copyright Copyright (c) 2025
+ */
+
 #ifndef HASH_TABLE_H
 #define HASH_TABLE_H
 
@@ -25,6 +34,15 @@
         HTab older;
         size_t migrate_pos = 0;
     };
+
+    /* FNV hash */
+    inline uint64_t str_hash(const uint8_t *data, size_t len) {
+        uint32_t h = 0x811C9DC5;
+        for (size_t i = 0; i < len; i++) {
+            h = (h + data[i]) * 0x01000193;
+        }
+        return h;
+    }
 
     HNode *hm_lookup(HMap *hmap, HNode *key, bool (*eq)(HNode *, HNode *));
     void   hm_insert(HMap *hmap, HNode *node);

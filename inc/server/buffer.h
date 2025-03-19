@@ -1,3 +1,12 @@
+/**
+ * @file ./inc/buffer.h
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-17
+ * @copyright Copyright (c) 2025
+ */
+
 #ifndef BUFFER_H
 #define BUFFER_H
 
@@ -27,5 +36,7 @@
     void out_dbl(Buffer &out, double val);
     void out_err(Buffer &out, uint32_t code, const std::string &msg);
     void out_arr(Buffer &out, uint32_t n);
+    size_t out_begin_arr(Buffer &out);
+    void out_end_arr(Buffer &out, size_t ctx, uint32_t n);
 
 #endif /* !BUFFER_H */

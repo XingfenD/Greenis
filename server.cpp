@@ -7,20 +7,23 @@
  * @copyright Copyright (c) 2025
  */
 
+/* stdlib */
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netinet/ip.h>
-#include <err_pack.h>
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
-#include <conn.h>
-#include <debug.h>
+/* system */
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/ip.h>
 #include <poll.h>
+
+/* proj */
+#include <debug.h>
+#include <conn.h>
+#include <err_pack.h>
 
 int main(int argc, char *argv[]) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);

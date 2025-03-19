@@ -1,16 +1,34 @@
 # ./Makefile
 
 CC = clang++
-CFLAGS = -Wall -g $(INCLUDES) -Wextra -funroll-loops -march=native -std=c++11
+CFLAGS = -Wall -g $(PUB_INC) -Wextra -funroll-loops -march=native -std=c++11
 LDFLAGS =
-INCLUDES = -I./inc
 
-LIB_DIR = lib
+# include paths
+PUB_INC = -I./inc
+SERVER_INC = -I./inc/server
+CLIENT_INC = -I./inc/client
+
+# library paths
+PUB_LIB = lib
+SERVER_LIB = $(PUB_LIB)/server
+CLIENT_LIB = $(PUB_LIB)/client
+
+# build paths
 BUILD_DIR = build
-BIN_DIR = $(BUILD_DIR)
+BIN_DIR = $(BUILD_DIR)/bin
 
-SOURCES := $(wildcard $(LIB_DIR)/*.cpp)
-OBJECTS := $(patsubst $(LIB_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
+
+# source files
+PUB_SRCS := $(wildcard $(PUB_LIB)/*.cpp)
+SERVER_SRCS := $(wildcard $(SERVER_LIB)/*.cpp)
+CLIENT_SRCS := $(wildcard $(CLIENT_LIB)/*.cpp)
+
+# object files
+PUB_OBJS := $(patsubst $(PUB_LIB)/%.cpp,$(BUILD_DIR)/%.o,$(PUB_SRCS))
+SERVER_OBJS := $(patsubst $(SERVER_LIB)/%.cpp,$(BUILD_DIR)/%.o,$(SERVER_SRCS))
+CLIENT_OBJS := $(patsubst $(CLIENT_LIB)/%.cpp,$(BUILD_DIR)/%.o,$(CLIENT_SRCS))
+
 SERVER_EXEC = $(BIN_DIR)/server_greenis
 CLIENT_EXEC = $(BIN_DIR)/client_greenis
 
@@ -29,20 +47,34 @@ clean:
 
 .PHONY: clean
 
-$(SERVER_EXEC): $(OBJECTS) $(BUILD_DIR)/server.o | $(BIN_DIR)
+# link
+$(SERVER_EXEC): $(PUB_OBJS) $(SERVER_OBJS) $(BUILD_DIR)/server.o | $(BIN_DIR)
 	$(CC) $(LDFLAGS) -o $@ $^
 
-$(CLIENT_EXEC): $(OBJECTS) $(BUILD_DIR)/client.o | $(BIN_DIR)
+$(CLIENT_EXEC): $(PUB_OBJS) $(CLIENT_OBJS) $(BUILD_DIR)/client.o | $(BIN_DIR)
 	$(CC) $(LDFLAGS) -o $@ $^
 
+
+# compile main
 $(BUILD_DIR)/server.o: ./server.cpp $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(SERVER_INC) -c -o $@ $<
 
 $(BUILD_DIR)/client.o: ./client.cpp $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CLIENT_INC) -c -o $@ $<
+
+# compile library
+$(BUILD_DIR)/%.o: $(PUB_LIB)/%.cpp | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-$(BUILD_DIR)/%.o: $(LIB_DIR)/%.cpp | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
+$(BUILD_DIR)/%.o: $(SERVER_LIB)/%.cpp | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(SERVER_INC) -c -o $@ $<
+
+$(BUILD_DIR)/%.o: $(CLIENT_LIB)/%.cpp | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(CLIENT_INC) -c -o $@ $<
+
+$(BIN_DIR): $(BUILD_DIR)
+	mkdir $@
 
 $(BUILD_DIR):
 	mkdir $@
+

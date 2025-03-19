@@ -7,20 +7,23 @@
  * @copyright Copyright (c) 2025
  */
 
-#include <assert.h>
+/* stdlib */
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
 
+/* system */
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
 
+/* C++ */
 #include <vector>
 #include <string>
 
+/* proj */
 #include <query.h>
 #include <err_pack.h>
 #include <debug.h>

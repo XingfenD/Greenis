@@ -26,7 +26,6 @@
 #include <conn.h>
 #include <err_pack.h>
 #include <utils.h>
-#include <query.h>
 #include <defs.h>
 #include <response.h>
 

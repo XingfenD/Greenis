@@ -71,6 +71,14 @@ void do_request(std::vector<std::string> &cmd, Buffer &out) {
         return do_del(cmd, out);
     } else if (cmd.size() == 1 && cmd[0] == "keys") {
         return do_keys(cmd, out);
+    } else if (cmd.size() == 4 && cmd[0] == "zadd") {
+        return do_zadd(cmd, out);
+    } else if (cmd.size() == 3 && cmd[0] == "zrem") {
+        return do_zrem(cmd, out);
+    } else if (cmd.size() == 3 && cmd[0] == "zscore") {
+        return do_zscore(cmd, out);
+    } else if (cmd.size() == 6 && cmd[0] == "zquery") {
+        return do_zquery(cmd, out);
     } else {
         return out_err(out, ERR_UNKNOWN, "unknown command.");
     }

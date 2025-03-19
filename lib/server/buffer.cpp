@@ -1,5 +1,15 @@
+/**
+ * @file ./lib/buffer.cpp
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-17
+ * @copyright Copyright (c) 2025
+ */
+
+#include <assert.h>
 #include <buffer.h>
-#include <query.h>
+#include <defs.h>
 
 /* Append data to the outgoing buffer */
 void
@@ -60,4 +70,15 @@ void out_err(Buffer &out, uint32_t code, const std::string &msg) {
 void out_arr(Buffer &out, uint32_t n) {
     buf_append_u8(out, TAG_ARR);
     buf_append_u32(out, n);
+}
+
+size_t out_begin_arr(Buffer &out) {
+    out.push_back(TAG_ARR);
+    buf_append_u32(out, 0);     /* filled by out_end_arr() */
+    return out.size() - 4;      /* the `ctx` arg */
+}
+
+void out_end_arr(Buffer &out, size_t ctx, uint32_t n) {
+    assert(out[ctx - 1] == TAG_ARR);
+    memcpy(&out[ctx], &n, 4);
 }

@@ -25,5 +25,7 @@
     void fd_set_nb(int fd);
     bool read_u32(const uint8_t *&cur, const uint8_t *end, uint32_t &out);
     bool read_str(const uint8_t *&cur, const uint8_t *end, size_t n, std::string &out);
+    bool str2dbl(const std::string &s, double &out);
+    bool str2int(const std::string &s, int64_t &out);
 
 #endif /* !UTILS_H */
