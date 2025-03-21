@@ -11,8 +11,7 @@
     /* KV pair for the top-level hashtable */
     struct Entry {
         struct HNode node;  /* hashtable node */
-        std::string key;
-        // std::string val;
+        std::string key;    /* key */
 
         /* value */
         ValueType type = T_INIT;

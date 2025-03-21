@@ -73,8 +73,8 @@ $(BUILD_DIR)/%.o: $(CLIENT_LIB)/%.cpp | $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(CLIENT_INC) -c -o $@ $<
 
 $(BIN_DIR): $(BUILD_DIR)
-	mkdir $@
+	mkdir -p $@
 
 $(BUILD_DIR):
-	mkdir $@
+	mkdir -p $@
 

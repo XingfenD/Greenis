@@ -7,10 +7,10 @@
  * @copyright Copyright (c) 2025
  */
 
- #ifdef __linux__
+#ifdef __linux__
 
- #include <string.h>
- 
+#include <string.h>
+
  #endif /* __linux */
 
 /* stdlib */
@@ -28,16 +28,19 @@
 #include <utils.h>
 #include <defs.h>
 #include <response.h>
+#include <HashTable.h>
+#include <timer.h>
+#include <global.h>
 
 /* application callback when the listening socket is ready */
-Conn *handle_accept(int fd) {
+int32_t handle_accept(int fd) {
     /* accept */
     struct sockaddr_in client_addr = {};
     socklen_t socklen = sizeof(client_addr);
     int connfd = accept(fd, (struct sockaddr *)&client_addr, &socklen);
     if (connfd < 0) {
         msg_errno("accept() error");
-        return NULL;
+        return -1;
     }
 
     uint32_t ip = client_addr.sin_addr.s_addr;
@@ -53,7 +56,17 @@ Conn *handle_accept(int fd) {
     Conn *conn = new Conn();
     conn->fd = connfd;
     conn->want_read = true;
-    return conn;
+    conn->last_active_ms = get_monotonic_msec();
+    dlist_insert_before(&g_data.idle_list, &conn->idle_node);
+
+    /* put it into the map */
+    if (g_data.fd2conn.size() <= (size_t)conn->fd) {
+        g_data.fd2conn.resize(conn->fd + 1);
+    }
+    assert(!g_data.fd2conn[conn->fd]);
+    g_data.fd2conn[conn->fd] = conn;
+    printf("g_data.fd2conn.size(): %zu\n", g_data.fd2conn.size());
+    return 0;
 }
 
 /* process 1 request if there is enough data */
@@ -161,4 +174,11 @@ void handle_read(Conn *conn) {
            try to write it without waiting for the next iteration. */
         return handle_write(conn);
     }   /* else: want read */
+}
+
+void conn_destroy(Conn *conn) {
+    (void)close(conn->fd);
+    g_data.fd2conn[conn->fd] = NULL;
+    dlist_detach(&conn->idle_node);
+    delete conn;
 }

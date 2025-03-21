@@ -8,15 +8,15 @@
 #include <HashTable.h>
 #include <defs.h>
 #include <utils.h>
+#include <conn.h>
+// #include <list.h>
+#include <global.h>
+
 
 struct LookupKey {
     struct HNode node;  /* hashtable node */
     std::string key;
 };
-
-struct {
-    HMap db;    /* top-level hashtable */
-} g_data;
 
 /* equality comparison for the top-level hashstable */
 bool entry_eq(HNode *node, HNode *key) {

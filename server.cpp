@@ -24,8 +24,14 @@
 #include <debug.h>
 #include <conn.h>
 #include <err_pack.h>
+#include <HashTable.h>
+#include <timer.h>
+#include <global.h>
 
 int main(int argc, char *argv[]) {
+    /* initialization */
+
+    dlist_init(&g_data.idle_list);
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         die("socket()");
@@ -54,8 +60,6 @@ int main(int argc, char *argv[]) {
         die("listen()");
     }
 
-    /* a map of all client connections, keyed by fd */
-    std::vector<Conn *> fd2conn;
     /* the event loop */
     std::vector<struct pollfd> poll_args;
 
@@ -68,7 +72,7 @@ int main(int argc, char *argv[]) {
         poll_args.push_back(pfd);
 
         /* the rest are the sockets that have already been connected */
-        for (Conn *conn : fd2conn) {
+        for (Conn *conn : g_data.fd2conn) {
             if (!conn) {
                 continue;
             }
@@ -87,7 +91,8 @@ int main(int argc, char *argv[]) {
         }
 
         /* wait for readiness */
-        int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), -1);
+        int32_t timeout_ms = next_timer_ms();
+        int rv = poll(poll_args.data(), (nfds_t)poll_args.size(), timeout_ms);
         if (rv < 0 && errno == EINTR) {
             continue;   /* not an error */
         }
@@ -97,14 +102,7 @@ int main(int argc, char *argv[]) {
 
         /* handle the listening socket */
         if (poll_args[0].revents) {
-            if (Conn *conn = handle_accept(fd)) {
-                /* put it into the map */
-                if (fd2conn.size() <= (size_t)conn->fd) {
-                    fd2conn.resize(conn->fd + 1);
-                }
-                assert(!fd2conn[conn->fd]);
-                fd2conn[conn->fd] = conn;
-            }
+            handle_accept(fd);
         }
 
         /* handle connected sockets */
@@ -114,30 +112,31 @@ int main(int argc, char *argv[]) {
             if (ready == 0) {
                 continue;
             }
+            Conn *conn = g_data.fd2conn[poll_args[i].fd];
 
-            Conn *conn = fd2conn[poll_args[i].fd];
+            /* update the idle timer by moving conn to the end of the list */
+            conn->last_active_ms = get_monotonic_msec();
+            dlist_detach(&conn->idle_node);
+            dlist_insert_before(&g_data.idle_list, &conn->idle_node);
+
+            /* handle IO */
             if (ready & POLLIN) {
                 assert(conn->want_read);
-                handle_read(conn);
-
-                /* application logic */
-
+                handle_read(conn);  /* application logic */
             }
             if (ready & POLLOUT) {
                 assert(conn->want_write);
-                handle_write(conn);
-
-                /* application logic */
-
+                handle_write(conn); /* application logic */
             }
 
             /* close the socket from socket error or application logic */
             if ((ready & POLLERR) || conn->want_close) {
-                (void)close(conn->fd);
-                fd2conn[conn->fd] = NULL;
-                delete conn;
+                conn_destroy(conn);
             }
         } /* for each connected sockets */
+
+        /* handle timers */
+        process_timers();
     } /* the event loop */
 
     close(fd); /* Close the listening socket before exiting */

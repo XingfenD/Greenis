@@ -16,10 +16,11 @@
 /* stdlib */
 #include <stdint.h>
 
-/* proj */
+/* C++ */
 #include <map>
 #include <string>
 #include <vector>
+#include <iostream>
 
 /* proj */
 #include <utils.h>
@@ -63,6 +64,9 @@ parse_req(const uint8_t *data, size_t size, std::vector<std::string> &out) {
 }
 
 void do_request(std::vector<std::string> &cmd, Buffer &out) {
+    for (auto &s : cmd) {
+        std::cout << s << " ";
+    }
     if (cmd.size() == 2 && cmd[0] == "get") {
         return do_get(cmd, out);
     } else if (cmd.size() == 3 && cmd[0] == "set") {
