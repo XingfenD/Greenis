@@ -1,5 +1,5 @@
 /**
- * @file ./lib/conn.cpp
+ * @file ./lib/server/conn.cpp
  * @brief Implements the functionality of the Conn class
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0

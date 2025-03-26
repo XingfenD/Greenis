@@ -1,5 +1,16 @@
+/**
+ * @file ./inc/defs.h
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-17
+ * @copyright Copyright (c) 2025
+ */
+
 #ifndef DEFS_H
 #define DEFS_H
+
+    #define PORT 1230
 
     #define K_MAX_ARGS ((size_t) (200 * 1000))
 

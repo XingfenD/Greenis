@@ -1,5 +1,5 @@
 /**
- * @file ./lib/response.cpp
+ * @file ./lib/server/response.cpp
  * @brief Implements request parsing, command handling, and response generation for a key-value store.
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0

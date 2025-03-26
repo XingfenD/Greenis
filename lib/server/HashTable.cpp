@@ -1,11 +1,12 @@
 /**
- * @file ./lib/HashTable.cpp
+ * @file ./lib/server/HashTable.cpp
  * @brief 
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0
  * @date 2025-03-17
  * @copyright Copyright (c) 2025
  */
+
 #include <assert.h>
 #include <stdlib.h>     /* calloc(), free() */
 #include <HashTable.h>

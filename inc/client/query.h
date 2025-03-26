@@ -1,5 +1,5 @@
 /**
- * @file ./inc/query.h
+ * @file ./inc/client/query.h
  * @brief Header file declaring functions for reading and writing full data, and handling client requests
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0

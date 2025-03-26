@@ -1,3 +1,12 @@
+/**
+ * @file ./lib/server/key_value.cpp
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-17
+ * @copyright Copyright (c) 2025
+ */
+
 /* C++ */
 #include <vector>
 #include <string>

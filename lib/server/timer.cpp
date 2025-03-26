@@ -1,3 +1,12 @@
+/**
+ * @file ./lib/server/timer.cpp
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-21
+ * @copyright Copyright (c) 2025
+ */
+
 #include <timer.h>
 #include <sys/time.h>
 #include <conn.h>

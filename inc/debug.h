@@ -1,5 +1,5 @@
 /**
- * @file ./utils/inc/debug.h
+ * @file ./inc/debug.h
  * @brief state some debug print functions and related macros
  * @author 2022302181113
  * @version 2.0

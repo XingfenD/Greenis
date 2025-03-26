@@ -1,7 +1,15 @@
-#pragma once
+/**
+ * @file ./inc/server/list.h
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-21
+ * @copyright Copyright (c) 2025
+ */
+#ifndef LIST_H
+#define LIST_H
 
 #include <stddef.h>
-
 
 struct DList {
     DList *prev = NULL;
@@ -30,3 +38,5 @@ inline void dlist_insert_before(DList *target, DList *rookie) {
     rookie->next = target;
     target->prev = rookie;
 }
+
+#endif /* LIST_H */

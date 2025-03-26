@@ -1,3 +1,11 @@
+/**
+ * @file ./lib/server/zset.cpp
+ * @brief 
+ * @author Fendy (xingfen.star@gmail.com)
+ * @version 1.0
+ * @date 2025-03-19
+ * @copyright Copyright (c) 2025
+ */
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>

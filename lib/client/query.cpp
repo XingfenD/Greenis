@@ -1,5 +1,5 @@
 /**
- * @file ./lib/query.cpp
+ * @file ./lib/client/query.cpp
  * @brief Implements functions for reading and writing full data, and handling client requests
  * @author Fendy (xingfen.star@gmail.com)
  * @version 1.0

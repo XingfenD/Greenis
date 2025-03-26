@@ -24,6 +24,7 @@
 #include <string>
 
 /* proj */
+#include <defs.h>
 #include <query.h>
 #include <err_pack.h>
 #include <debug.h>
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
 
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
-    addr.sin_port = ntohs(1230);
+    addr.sin_port = ntohs(PORT);
     addr.sin_addr.s_addr = ntohl(INADDR_LOOPBACK);  /* 127.0.0.1 */
     int rv = connect(fd, (const struct sockaddr *)&addr, sizeof(addr));
     if (rv) {

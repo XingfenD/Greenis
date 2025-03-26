@@ -1,5 +1,5 @@
 /**
- * @file ./utils/src/debug.c
+ * @file ./lib/debug.c
  * @brief realize the functions stated in file:./utils/inc/debug.h
  * @author 2022302181113
  * @version 2.0

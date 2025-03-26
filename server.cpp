@@ -27,6 +27,7 @@
 #include <HashTable.h>
 #include <timer.h>
 #include <global.h>
+#include <defs.h>
 
 int main(int argc, char *argv[]) {
     /* initialization */
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
     /* bind */
     struct sockaddr_in addr = {};
     addr.sin_family = AF_INET;
-    addr.sin_port = htons(1230); /* Correct network byte order */
+    addr.sin_port = htons(PORT); /* Correct network byte order */
     addr.sin_addr.s_addr = INADDR_ANY; /* Correct address */
     int rv = bind(fd, (const struct sockaddr *)&addr, sizeof(addr));
     if (rv) {
@@ -58,6 +59,8 @@ int main(int argc, char *argv[]) {
     rv = listen(fd, SOMAXCONN);
     if (rv) {
         die("listen()");
+    } else {
+        stream_printf(stderr, "server listening on port %d\n", PORT);
     }
 
     /* the event loop */
