@@ -14,6 +14,7 @@
 #include <HashTable.h>
 #include <conn.h>
 #include <list.h>
+#include <heap.h>
 
 typedef struct {
     HMap db;
@@ -21,6 +22,8 @@ typedef struct {
     std::vector<Conn *> fd2conn;
     /* timers for idle connections */
     DList idle_list;
+    /* timers for TTLs */
+    std::vector<HeapItem> heap;
 } GLOBAL_DATA;
 
 extern GLOBAL_DATA g_data;

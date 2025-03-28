@@ -21,7 +21,8 @@
 struct Entry {
     struct HNode node;  /* hashtable node */
     std::string key;    /* key */
-
+    /* for TTL */
+    size_t heap_idx = -1;   /* array index to the heap item */
     /* value */
     ValueType type = T_INIT;
     /* one of the following */
@@ -39,5 +40,9 @@ void do_zadd(std::vector<std::string> &cmd, Buffer &out);
 void do_zrem(std::vector<std::string> &cmd, Buffer &out);
 void do_zscore(std::vector<std::string> &cmd, Buffer &out);
 void do_zquery(std::vector<std::string> &cmd, Buffer &out);
+void do_expire(std::vector<std::string> &cmd, Buffer &out);
+void do_ttl(std::vector<std::string> &cmd, Buffer &out);
+void entry_del(Entry *ent);
+void entry_set_ttl(Entry *ent, int64_t ttl_ms);
 
 #endif /* !KEY_VALUE_H */

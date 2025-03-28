@@ -44,6 +44,7 @@ inline uint64_t str_hash(const uint8_t *data, size_t len) {
     return h;
 }
 
+bool hnode_same(HNode *node, HNode *key);
 HNode *hm_lookup(HMap *hmap, HNode *key, bool (*eq)(HNode *, HNode *));
 void   hm_insert(HMap *hmap, HNode *node);
 HNode *hm_delete(HMap *hmap, HNode *key, bool (*eq)(HNode *, HNode *));

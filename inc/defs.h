@@ -16,6 +16,14 @@
 
     #define K_MAX_MSG ((size_t) 4096)
 
+    #define K_IDLE_TIMEOUT_MS ((uint64_t) 5 * 1000)
+
+    #define K_MAX_WORKS ((size_t) 2000)
+
+    #define K_MAX_LOAD_FACTOR ((size_t) 8)
+
+    #define K_REHASHING_WORK ((size_t) 128)
+
     #define container_of(ptr, T, member) \
         ((T *)( (char *)ptr - offsetof(T, member) ))
 

@@ -10,6 +10,11 @@
 #include <assert.h>
 #include <stdlib.h>     /* calloc(), free() */
 #include <HashTable.h>
+#include <defs.h>
+
+bool hnode_same(HNode *node, HNode *key) {
+    return node == key;
+}
 
 /* n must be a power of 2 */
 void h_init(HTab *htab, size_t n) {
@@ -57,12 +62,9 @@ HNode *h_detach(HTab *htab, HNode **from) {
     return node;
 }
 
-/* constant work */
-const size_t k_rehashing_work = 128;
-
 void hm_help_rehashing(HMap *hmap) {
     size_t nwork = 0;
-    while (nwork < k_rehashing_work && hmap->older.size > 0) {
+    while (nwork < K_REHASHING_WORK && hmap->older.size > 0) {
         /* find a non-empty slot */
         HNode **from = &hmap->older.tab[hmap->migrate_pos];
         if (!*from) {
@@ -97,9 +99,6 @@ HNode *hm_lookup(HMap *hmap, HNode *key, bool (*eq)(HNode *, HNode *)) {
     return from ? *from : NULL;
 }
 
-/* constant */
-const size_t k_max_load_factor = 8;
-
 void hm_insert(HMap *hmap, HNode *node) {
     if (!hmap->newer.tab) {
         h_init(&hmap->newer, 4);    /* initialize it if empty */
@@ -107,7 +106,7 @@ void hm_insert(HMap *hmap, HNode *node) {
     h_insert(&hmap->newer, node);   /* always insert to the newer table */
 
     if (!hmap->older.tab) {         /* check whether we need to rehash */
-        size_t shreshold = (hmap->newer.mask + 1) * k_max_load_factor;
+        size_t shreshold = (hmap->newer.mask + 1) * K_MAX_LOAD_FACTOR;
         if (hmap->newer.size >= shreshold) {
             hm_trigger_rehashing(hmap);
         }

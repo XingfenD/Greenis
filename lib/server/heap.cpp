@@ -6,22 +6,23 @@
  * @date 2025-03-27
  * @copyright Copyright (c) 2025
  */
+
 #include <heap.h>
+#include <vector>
 
-
-size_t heap_parent(size_t i) {
+static size_t heap_parent(size_t i) {
     return (i + 1) / 2 - 1;
 }
 
-size_t heap_left(size_t i) {
+static size_t heap_left(size_t i) {
     return i * 2 + 1;
 }
 
-size_t heap_right(size_t i) {
+static size_t heap_right(size_t i) {
     return i * 2 + 2;
 }
 
-void heap_up(HeapItem *a, size_t pos) {
+static void heap_up(HeapItem *a, size_t pos) {
     HeapItem t = a[pos];
     while (pos > 0 && a[heap_parent(pos)].val > t.val) {
         /* swap with the parent */
@@ -33,7 +34,7 @@ void heap_up(HeapItem *a, size_t pos) {
     *a[pos].ref = pos;
 }
 
-void heap_down(HeapItem *a, size_t pos, size_t len) {
+static void heap_down(HeapItem *a, size_t pos, size_t len) {
     HeapItem t = a[pos];
     while (true) {
         /* find the smallest one among the parent and their kids */
@@ -66,4 +67,24 @@ void heap_update(HeapItem *a, size_t pos, size_t len) {
     } else {
         heap_down(a, pos, len);
     }
+}
+
+void heap_delete(std::vector<HeapItem> &a, size_t pos) {
+    /* swap the erased item with the last item*/
+    a[pos] = a.back();
+    a.pop_back();
+    /* update the swapped item */
+    if (pos < a.size()) {
+        heap_update(a.data(), pos, a.size());
+    }
+}
+
+void heap_upsert(std::vector<HeapItem> &a, size_t pos, HeapItem t) {
+    if (pos < a.size()) {
+        a[pos] = t;         /* update an existing item */
+    } else {
+        pos = a.size();
+        a.push_back(t);     /* or add a new item */
+    }
+    heap_update(a.data(), pos, a.size());
 }

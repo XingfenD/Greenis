@@ -7,17 +7,25 @@
  * @copyright Copyright (c) 2025
  */
 
+/* stdlib */
+#include <assert.h>
+
 /* C++ */
 #include <vector>
 #include <string>
 
 /* proj */
-#include <key_value.h>
+/* proj::data structure */
 #include <buffer.h>
 #include <HashTable.h>
+#include <heap.h>
+
+#include <conn.h>
+#include <timer.h>
+#include <key_value.h>
+
 #include <defs.h>
 #include <utils.h>
-#include <conn.h>
 // #include <list.h>
 #include <global.h>
 
@@ -44,7 +52,24 @@ void entry_del(Entry *ent) {
     if (ent->type == T_ZSET) {
         zset_clear(&ent->zset);
     }
+    entry_set_ttl(ent, -1); /* remove from the heap data structure */
     delete ent;
+}
+
+/* set or remove the TTL */
+void entry_set_ttl(Entry *ent, int64_t ttl_ms) {
+    if (ttl_ms < 0 && ent->heap_idx != (size_t)-1) {
+        /* setting a negative TTL means removing the TTL */
+        heap_delete(g_data.heap, ent->heap_idx);
+        ent->heap_idx = -1;
+    } else if (ttl_ms >= 0) {
+        /* add or update the heap data structure */
+        uint64_t expire_at = get_monotonic_msec() + (uint64_t)ttl_ms;
+        HeapItem item;
+        item.val = expire_at;
+        item.ref = &ent->heap_idx;
+        heap_upsert(g_data.heap, ent->heap_idx, item);
+    }
 }
 
 void do_get(std::vector<std::string> &cmd, Buffer &out) {
@@ -230,4 +255,44 @@ void do_zquery(std::vector<std::string> &cmd, Buffer &out) {
         n += 2;
     }
     out_end_arr(out, ctx, (uint32_t)n);
+}
+
+/* PEXPIRE key ttl_ms */
+void do_expire(std::vector<std::string> &cmd, Buffer &out) {
+    int64_t ttl_ms = 0;
+    if (!str2int(cmd[2], ttl_ms)) {
+        return out_err(out, ERR_BAD_ARG, "expect int64");
+    }
+
+    LookupKey key;
+    key.key.swap(cmd[1]);
+    key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
+
+    HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
+    if (node) {
+        Entry *ent = container_of(node, Entry, node);
+        entry_set_ttl(ent, ttl_ms);
+    }
+    return out_int(out, node ? 1: 0);
+}
+
+/* PTTL key */
+void do_ttl(std::vector<std::string> &cmd, Buffer &out) {
+    LookupKey key;
+    key.key.swap(cmd[1]);
+    key.node.hcode = str_hash((uint8_t *)key.key.data(), key.key.size());
+
+    HNode *node = hm_lookup(&g_data.db, &key.node, &entry_eq);
+    if (!node) {
+        return out_int(out, -2);    /* not found */
+    }
+
+    Entry *ent = container_of(node, Entry, node);
+    if (ent->heap_idx == (size_t)-1) {
+        return out_int(out, -1);    /* no TTL */
+    }
+
+    uint64_t expire_at = g_data.heap[ent->heap_idx].val;
+    uint64_t now_ms = get_monotonic_msec();
+    return out_int(out, expire_at > now_ms ? (expire_at - now_ms) : 0);
 }
