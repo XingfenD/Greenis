@@ -1,7 +1,7 @@
 # ./Makefile
 
 CC = clang++
-CFLAGS = -Wall -g $(PUB_INC) -Wextra -funroll-loops -march=native -std=c++11
+CFLAGS = -Wall -g $(PUB_INC) -Wextra -funroll-loops -march=native -std=c++20
 LDFLAGS =
 
 # include paths

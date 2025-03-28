@@ -31,8 +31,9 @@
 
 int main(int argc, char *argv[]) {
     /* initialization */
-
     dlist_init(&g_data.idle_list);
+    thread_pool_init(&g_data.thread_pool, 4);
+
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) {
         die("socket()");

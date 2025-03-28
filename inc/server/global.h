@@ -15,6 +15,7 @@
 #include <conn.h>
 #include <list.h>
 #include <heap.h>
+#include <thread_pool.h>
 
 typedef struct {
     HMap db;
@@ -24,6 +25,8 @@ typedef struct {
     DList idle_list;
     /* timers for TTLs */
     std::vector<HeapItem> heap;
+    /* the thread pool */
+    TheadPool thread_pool;
 } GLOBAL_DATA;
 
 extern GLOBAL_DATA g_data;
